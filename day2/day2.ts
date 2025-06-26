@@ -33,13 +33,31 @@ function part1() {
 function part2() {
   let safeCount = 0
   let unsafeCount = 0
+
+  const brokenList: number[][] = []
+  const workingList = []
+
   const reports = []
   for (const row of inputRows) {
     reports.push(row.split(" ").map(str => +str))
   }
   for (const report of reports) {
-    checkReport(report, true) ? safeCount++ : unsafeCount++
+    checkReport(report, true) && workingList.push(report)
+    checkReport2num(report, true) && brokenList.push(report)
   }
+
+  const errors = workingList.filter((report) => !brokenList.includes(report))
+  console.log("\n\n\nCASES WHERE THE BROKEN LIST IS ALL FUCKED UP\n")
+  for (const errorReport of errors) {
+    checkReport2num(errorReport, true)
+  }
+  console.log(errors.length)
+
+  // ok so the issue with checkReport2num -- my original approach which aimed to be more elegent --
+  // occurs where the first direction is wrong such that removing the first value would solve the
+  // problem, but because the 2nd and 3rd entries are picked up as the issue (for violating the 
+  // direction established by the first), neither removal actually fixes the issue
+
   return safeCount
 }
 
