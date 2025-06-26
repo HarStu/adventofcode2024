@@ -43,8 +43,76 @@ function part2() {
   return safeCount
 }
 
-// da: "Dampener Available"
 function checkReport(report: number[], da: boolean = false): boolean {
+  const asc = report[0]! < report[1]! ? true : false
+
+  //console.log(`\n${!da ? '\t2ND-TRY' : '1ST-TRY'} REPORT: ${report}`)
+
+  for (let i = 1; i < report.length; i++) {
+
+    // excessive value jump problem
+    const diff = Math.abs(report[i - 1]! - report[i]!)
+    if (diff > 3 || diff < 1) {
+
+      console.log(`${!da ? '\t\t' : ''}Bad diff problem on ${report} at ${report[i - 1]},${report[i]}`)
+      if (da) {
+        console.log(`\tRe-running with:`)
+        console.log(`\t${rIdx(report, i - 1)}`)
+        console.log(`\t${rIdx(report, i)}`)
+      } else {
+        console.log(`\t\tDampener unavailable, return false\n`)
+      }
+
+      if (da) {
+        let flag = false
+        for (let ri = 0; ri < report.length; ri++) {
+          if (checkReport(rIdx(report, ri))) {
+            return true
+          }
+        }
+        return false
+      } else {
+        return false
+      }
+
+      // see if we can fix this by expending our dampener to remove i-1 or i
+      return da ? (checkReport(rIdx(report, i - 1)) || checkReport(rIdx(report, i))) : false
+    }
+
+    // switch direction problem
+    if ((asc && (report[i - 1]! > report[i]!)) || !asc && (report[i - 1]! < report[i]!)) {
+
+      console.log(`${!da ? '\t\t' : ''}Switch direction problem on ${report} at ${report[i - 1]},${report[i]}`)
+      if (da) {
+        console.log(`\tRe-running with:`)
+        console.log(`\t${rIdx(report, i - 1)}`)
+        console.log(`\t${rIdx(report, i)}`)
+      } else {
+        console.log(`\t\tDampener unavailable, return false\n`)
+      }
+
+      if (da) {
+        let flag = false
+        for (let ri = 0; ri < report.length; ri++) {
+          if (checkReport(rIdx(report, ri))) {
+            return true
+          }
+        }
+        return false
+      } else {
+        return false
+      }
+
+      // see if we can fix this by expending our dampener to remove i-1 or i
+      return da ? (checkReport(rIdx(report, i - 1)) || checkReport(rIdx(report, i))) : false
+    }
+  }
+  !da && console.log(`\t\t${report} Looks good, return true\n`)
+  return true
+}
+
+// da: "Dampener Available"
+function checkReport2num(report: number[], da: boolean = false): boolean {
   const asc = report[0]! < report[1]! ? true : false
 
   //console.log(`\n${!da ? '\t2ND-TRY' : '1ST-TRY'} REPORT: ${report}`)
