@@ -16,9 +16,27 @@ for (const row of inputRows) {
 const aNums = a.sort().map(str => +str!)
 const bNums = b.sort().map(str => +str!)
 
-let total = 0
-for (let i = a.length - 1; i >= 0; i--) {
-  total += Math.abs(aNums.pop()! - bNums.pop()!)
+function part1() {
+  let total = 0
+  for (let i = a.length - 1; i >= 0; i--) {
+    total += Math.abs(aNums.pop()! - bNums.pop()!)
+  }
+  return total
 }
 
-console.log(total)
+function part2() {
+  const appearances = new Map<number, number>()
+  for (const num of bNums) {
+    appearances.set(num, (appearances.get(num) || 0) + 1)
+  }
+
+  const aSim = []
+  for (const num of aNums) {
+    aSim.push(num * (appearances.get(num) ?? 0))
+  }
+
+  const simScore = aSim.reduce((total, cur) => total + cur)
+  return simScore
+}
+
+console.log(part2())
