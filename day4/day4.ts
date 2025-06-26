@@ -22,7 +22,7 @@ function checkXWord(xword: string[][], target: string) {
 
     // check vertical
     for (let x = 0; x < xword[0]!.length; x++) {
-      for (let y = 0; y < xword.length - target.length + 1; y++) {
+      for (let y = 0; y <= xword.length - target.length; y++) {
         // construct the word
         const word = []
         for (let i = 0; i < target.length; i++) {
