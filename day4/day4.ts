@@ -14,6 +14,7 @@ function checkXWord(xword: string[][], target: string) {
 }
 
 function genTarget(s: string): string[][] {
+  s = s.toUpperCase()
   const t1 = []
   for (const char of s) {
     t1.push(char)
@@ -21,3 +22,5 @@ function genTarget(s: string): string[][] {
   const t2 = t1.reverse()
   return [t1, t2]
 }
+
+console.log(genTarget('xmas'))
