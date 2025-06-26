@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day4_input.txt', "utf8")
+const input = readFileSync('./day4_test.txt', "utf8")
 
 const xword = input.split('\n').map(row => row.split(''))
 
@@ -35,9 +35,39 @@ function checkXWord(xword: string[][], target: string) {
       }
     }
 
-    // check diagonal
+    // check diagonal negative-slope
+    for (let x = 0; x <= xword[0]!.length - target.length; x++) {
+      for (let y = 0; y <= xword.length - target.length; y++) {
+        // construct the word
+        const word = []
+        for (let i = 0; i < target.length; i++) {
+          word.push(xword[i + y]![i + x]!)
+        }
+        console.log(`WORD: ${word} TARGET: ${target}`)
+        if (arrEq(target, word)) {
+          matches++
+        }
+      }
+    }
+
+    // check diagonal positive-slope
+    for (let x = 0; x <= xword[0]!.length - target.length; x++) {
+      for (let y = target.length - 1; y < xword.length; y++) {
+        // construct the word
+        const word = []
+        for (let i = 0; i < target.length; i++) {
+          word.push(xword[y - i]![i + x]!)
+        }
+        console.log(`WORD: ${word} TARGET: ${target}`)
+        if (arrEq(target, word)) {
+          matches++
+        }
+      }
+    }
+
+
+    return matches;
   }
-  return matches;
 }
 
 function genTarget(s: string): string[][] {
