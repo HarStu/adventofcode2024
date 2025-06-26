@@ -19,7 +19,7 @@ function genTarget(s: string): string[][] {
   for (const char of s) {
     t1.push(char)
   }
-  const t2 = t1.reverse()
+  const t2 = structuredClone(t1).reverse()
   return [t1, t2]
 }
 
