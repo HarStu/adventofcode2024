@@ -44,16 +44,20 @@ function part1(rules: string[][], production: string[][]) {
       // otherwise, kill the midVal
       const preReqs = unlockMap.get(num)
       console.log(`prereqs of ${num} are: ${preReqs}`)
+      console.log(`seen is:`)
+      console.log(seen)
       if (!preReqs || preReqs.length === 0) {
         seen.add(num)
-        console.log(`empty prereqs for ${num}, so we add it to seen. seen is now ${seen}`)
+        console.log(`empty prereqs for ${num}, add to seen`)
       } else {
         // check if preReqs of num is a subset of seen
         // if it is, continue
         // if it's not, set midVal to zero
         if ([...preReqs].every(val => seen.has(val))) {
           seen.add(num)
+          console.log(`have all prereqs for ${num}, add to seen`)
         } else {
+          console.log(`MISSING PREREQS FOR ${num}! KILL THE MIDVAL!`)
           midVal = 0
         }
       }
