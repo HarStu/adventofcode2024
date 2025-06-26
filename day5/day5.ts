@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day5_test.txt', "utf8")
+const input = readFileSync('./day5_input.txt', "utf8")
 
 const [rulesText, productionText] = input.split('\n\n')
 
