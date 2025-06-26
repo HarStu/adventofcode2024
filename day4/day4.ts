@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day4_test.txt', "utf8")
+const input = readFileSync('./day4_input.txt', "utf8")
 
 const xword = input.split('\n').map(row => row.split(''))
 
@@ -9,7 +9,6 @@ function checkXWord(xword: string[][], target: string) {
   let matches = 0
   // check both targets (forward and reversed)
   for (const target of targetArr) {
-
     // check horizontal
     for (const row of xword) {
       //console.log(`ROW: ${row}`)
@@ -19,8 +18,8 @@ function checkXWord(xword: string[][], target: string) {
         }
       }
     }
-
     // check vertical
+    let counter = 1
     for (let x = 0; x < xword[0]!.length; x++) {
       for (let y = 0; y <= xword.length - target.length; y++) {
         // construct the word
@@ -28,12 +27,14 @@ function checkXWord(xword: string[][], target: string) {
         for (let i = 0; i < target.length; i++) {
           word.push(xword[i + y]![x]!)
         }
-        console.log(`WORD: ${word} TARGET: ${target}`)
+        console.log(`WORD: ${word} TARGET: ${target} COUNTER: ${counter}, MATCH: ${arrEq(target, word)}`)
         if (arrEq(target, word)) {
           matches++
         }
+        counter++
       }
     }
+    console.log(`counter: ${counter}`)
 
     // check diagonal negative-slope
     for (let x = 0; x <= xword[0]!.length - target.length; x++) {
@@ -64,10 +65,9 @@ function checkXWord(xword: string[][], target: string) {
         }
       }
     }
-
-
-    return matches;
   }
+
+  return matches;
 }
 
 function genTarget(s: string): string[][] {
