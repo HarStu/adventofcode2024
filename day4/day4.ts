@@ -9,11 +9,13 @@ function checkXMas(xword: string[][]) {
   const validStrs = ['MMSS', 'SSMM', 'MSMS', 'SMSM']
   for (let x = 1; x < xword[0]!.length - 1; x++) {
     for (let y = 1; y < xword.length - 1; y++) {
-      // build an 'observation string
-      const obvStr = "".concat(xword[y - 1]![x - 1]!).concat(xword[y - 1]![x + 1]!).concat(xword[y + 1]![x - 1]!).concat(xword[y + 1]![x + 1]!)
-      console.log(`AT [${y}][${x}], we have observation string: ${obvStr}`)
-      if (validStrs.includes(obvStr)) {
-        matches++
+      if (xword[y]![x]! == 'A') {
+        // build an 'observation string
+        const obvStr = "".concat(xword[y - 1]![x - 1]!).concat(xword[y - 1]![x + 1]!).concat(xword[y + 1]![x - 1]!).concat(xword[y + 1]![x + 1]!)
+        if (validStrs.includes(obvStr)) {
+          console.log(`AT [${y}][${x}], we have observation string: ${obvStr}`)
+          matches++
+        }
       }
     }
   }
@@ -100,4 +102,4 @@ function arrEq(arr1: string[], arr2: string[]): boolean {
   return JSON.stringify(arr1) === JSON.stringify(arr2)
 }
 
-console.log(checkXWord(xword, 'xmas'))
+console.log(checkXMas(xword))
