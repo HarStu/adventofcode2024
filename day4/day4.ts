@@ -14,13 +14,28 @@ function checkXWord(xword: string[][], target: string) {
     for (const row of xword) {
       //console.log(`ROW: ${row}`)
       for (let i = 0; i <= row.length - target.length; i++) {
-        console.log(`SLICE ${i}: ${row.slice(i, i + target.length)} vs TARGET: ${target}`)
         if (arrEq(target, row.slice(i, i + target.length))) {
           matches++
-          console.log(`SLICE ${i}: ${row.slice(i, i + target.length)} vs TARGET: ${target} AT ${i}`)
         }
       }
     }
+
+    // check vertical
+    for (let x = 0; x < xword[0]!.length; x++) {
+      for (let y = 0; y < xword.length - target.length + 1; y++) {
+        // construct the word
+        const word = []
+        for (let i = 0; i < target.length; i++) {
+          word.push(xword[i + y]![x]!)
+        }
+        console.log(`WORD: ${word} TARGET: ${target}`)
+        if (arrEq(target, word)) {
+          matches++
+        }
+      }
+    }
+
+    // check diagonal
   }
   return matches;
 }
