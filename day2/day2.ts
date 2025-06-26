@@ -46,17 +46,21 @@ function part2() {
 // da: "Dampener Available"
 function checkReport(report: number[], da: boolean = false): boolean {
   const asc = report[0]! < report[1]! ? true : false
+
+  //console.log(`\n${!da ? '\t2ND-TRY' : '1ST-TRY'} REPORT: ${report}`)
+
   for (let i = 1; i < report.length; i++) {
+
     // excessive value jump problem
     if (Math.abs(report[i - 1]! - report[i]!) > 3) {
 
-      console.log(`${da ? '\t' : ''}Excessive value jump problem on ${report}`)
-      if (!da) {
-        console.log(`Re-running with:`)
+      console.log(`${!da ? '\t\t' : ''}Excessive value jump problem on ${report} at ${report[i - 1]},${report[i]}`)
+      if (da) {
+        console.log(`\tRe-running with:`)
         console.log(`\t${rIdx(report, i - 1)}`)
         console.log(`\t${rIdx(report, i)}`)
       } else {
-        console.log(`Dampener already expended, return false\n`)
+        console.log(`\t\tDampener unavailable, return false\n`)
       }
 
       // see if we can fix this by expending our dampener to remove i-1 or i
@@ -66,13 +70,13 @@ function checkReport(report: number[], da: boolean = false): boolean {
     // identical value problem
     if (report[i - 1] === report[i]) {
 
-      console.log(`${da ? '\t' : ''}Identical value problem on ${report}`)
-      if (!da) {
+      console.log(`${!da ? '\t\t' : ''}Identical value problem on ${report} at ${report[i - 1]},${report[i]}`)
+      if (da) {
         console.log(`Re-running with:`)
         console.log(`\t${rIdx(report, i - 1)}`)
         console.log(`\t${rIdx(report, i)}`)
       } else {
-        console.log(`Dampener already expended, return false\n`)
+        console.log(`\t\tDampener unavailable, return false\n`)
       }
 
       // see if we can fix this by expending our dampener to remove i-1 or i
@@ -82,19 +86,20 @@ function checkReport(report: number[], da: boolean = false): boolean {
     // switch direction problem
     if ((asc && (report[i - 1]! > report[i]!)) || !asc && (report[i - 1]! < report[i]!)) {
 
-      console.log(`${da ? '\t' : ''}Switch direction problem on ${report}`)
-      if (!da) {
-        console.log(`Re-running with:`)
+      console.log(`${!da ? '\t\t' : ''}Switch direction problem on ${report} at ${report[i - 1]},${report[i]}`)
+      if (da) {
+        console.log(`\tRe-running with:`)
         console.log(`\t${rIdx(report, i - 1)}`)
         console.log(`\t${rIdx(report, i)}`)
       } else {
-        console.log(`Dampener already expended, return false\n`)
+        console.log(`\t\tDampener unavailable, return false\n`)
       }
 
       // see if we can fix this by expending our dampener to remove i-1 or i
       return da ? (checkReport(rIdx(report, i - 1)) || checkReport(rIdx(report, i))) : false
     }
   }
+  !da && console.log(`\t\t${report} Looks good, return true\n`)
   return true
 }
 
