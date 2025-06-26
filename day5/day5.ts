@@ -22,7 +22,7 @@ for (let rule of rules!) {
 console.log(mainUnlockMap)
 
 function part1(rules: string[][], production: string[][]) {
-  const midVals = []
+  let total = 0
   for (const row of production) {
     // Build the ruleSet, lockedSet, unlockedSet, and unlockMap
     const unlockMap = new Map<string, string[]>()
@@ -37,15 +37,19 @@ function part1(rules: string[][], production: string[][]) {
     console.log(unlockMap)
     console.log(lockedNums)
 
+    let midVal = Number(row[Math.floor(row.length / 2)])
     for (let num of row) {
-      let midVal = Number(row[Math.floor(row.length / 2)])
       if (lockedNums.has(num)) {
         midVal = 0
-      } else if () {
-
+      } else if (unlockMap.has(num)) {
+        for (const val of unlockMap.get(num)!) {
+          lockedNums.delete(val)
+        }
       }
     }
+    total += midVal
   }
+  return total
 }
 
-part1(rules!, production!)
+console.log(part1(rules!, production!))
