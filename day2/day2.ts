@@ -52,27 +52,12 @@ function checkReport(report: number[], da: boolean = false): boolean {
   for (let i = 1; i < report.length; i++) {
 
     // excessive value jump problem
-    if (Math.abs(report[i - 1]! - report[i]!) > 3) {
+    const diff = Math.abs(report[i - 1]! - report[i]!)
+    if (diff > 3 || diff < 1) {
 
-      console.log(`${!da ? '\t\t' : ''}Excessive value jump problem on ${report} at ${report[i - 1]},${report[i]}`)
+      console.log(`${!da ? '\t\t' : ''}Bad diff problem on ${report} at ${report[i - 1]},${report[i]}`)
       if (da) {
         console.log(`\tRe-running with:`)
-        console.log(`\t${rIdx(report, i - 1)}`)
-        console.log(`\t${rIdx(report, i)}`)
-      } else {
-        console.log(`\t\tDampener unavailable, return false\n`)
-      }
-
-      // see if we can fix this by expending our dampener to remove i-1 or i
-      return da ? (checkReport(rIdx(report, i - 1)) || checkReport(rIdx(report, i))) : false
-    }
-
-    // identical value problem
-    if (report[i - 1] === report[i]) {
-
-      console.log(`${!da ? '\t\t' : ''}Identical value problem on ${report} at ${report[i - 1]},${report[i]}`)
-      if (da) {
-        console.log(`Re-running with:`)
         console.log(`\t${rIdx(report, i - 1)}`)
         console.log(`\t${rIdx(report, i)}`)
       } else {
