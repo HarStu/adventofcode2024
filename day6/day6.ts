@@ -31,23 +31,34 @@ nextDir.set('<', '^')
 
 function main() {
   // setup the initial state of the world
+  let loopedWorlds = 0
+  let exitedWorlds = 0
 
-  let world = {
-    map: map,
-    guard: getGuard(map),
-    status: 'running',
-    prevMoves: new Set<string>(),
-    blockSpots: new Set<string>(),
-  } as WorldState
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map.length; x++) {
+      const world = {
+        map: structuredClone(map),
+        guard: getGuard(map),
+        status: 'running',
+        prevMoves: new Set<string>(),
+        blockSpots: new Set<string>(),
+      } as WorldState
+      world.map[y][x] = '#'
 
-  const finalWorld = runSim(world, true)
-  console.log(finalWorld)
+      const finalWorld = runSim(world)
+      console.log(`status of world ${y},${x}: ${finalWorld.status}`)
+      if (finalWorld.status === 'exited') {
+        exitedWorlds++
+      } else if (finalWorld.status === 'looped') {
+        loopedWorlds++
+      }
+    }
+  }
+  console.log(`looped: ${loopedWorlds}  exited: ${exitedWorlds}  total: ${loopedWorlds + exitedWorlds}`)
 
 }
 
-function runSim(world: WorldState, simulateBlockers: boolean) {
-
-  world = backFillHistory(world)
+function runSim(world: WorldState) {
 
   while (world.status === 'running') {
     world = updateWorld(world)
@@ -55,32 +66,6 @@ function runSim(world: WorldState, simulateBlockers: boolean) {
 
   return world
 }
-
-function backFillHistory(world: WorldState): WorldState {
-  let x = world.guard.x
-  let y = world.guard.y
-  let dir = world.guard.dir
-
-  while (true) {
-    if (dir === '^') {
-      y++
-    } else if (dir === '>') {
-      x--
-    } else if (dir === 'v') {
-      y--
-    } else if (dir === '<') {
-      x++
-    }
-
-    world.prevMoves.add(`${y},${x}${world.guard.dir}`)
-
-    if ((y >= world.map.length || y < 0 || x >= world.map[0].length || x < 0) || world.map[y][x] === '#') {
-      return world
-    }
-  }
-}
-
-
 
 function updateWorld(world: WorldState): WorldState {
   // Update the current position of the guard to 'X'
@@ -140,7 +125,7 @@ function updateWorld(world: WorldState): WorldState {
 // find initial location of guard
 function getGuard(map: string[][]) {
   for (const y in map) {
-    for (const x in map) {
+    for (const x in map[y]) {
       if (['^', '>', 'v', '<'].includes(map[y][x])) {
         return {
           dir: map[y][x],
@@ -152,4 +137,4 @@ function getGuard(map: string[][]) {
   }
 }
 
-console.log(main())
+main()
