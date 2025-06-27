@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day7_test.txt', 'utf8')
+const input = readFileSync('./day7_input.txt', 'utf8')
 const rows = input.split('\n')
 
 const problems = []
@@ -12,25 +12,14 @@ for (const i in rows) {
 console.log(problems)
 
 function part1(problems: any[]) {
-  const results = []
+  let result = 0
   for (const problem of problems) {
-
-    //console.log(problem)
 
     const total = Number(problem[0])
     const nums = Array.from(problem.slice(1)).map(str => Number(str))
 
-    //console.log(nums)
-
-    let pa: number[] = []
-    //console.log(op1)
-    //console.log(op2)
-    pa.push(nums[0] + nums[1])
-    pa.push(nums[0] * nums[1])
-
-    console.log(`initial sum and product: ${pa}`)
-
-    for (let i = 2; i < nums.length; i++) {
+    let pa: number[] = [1]
+    for (let i = 0; i < nums.length; i++) {
       const sums = []
       const products = []
       for (const val of pa) {
@@ -40,15 +29,11 @@ function part1(problems: any[]) {
       pa = sums.concat(products)
     }
 
-    console.log(pa)
-
     if (pa.includes(total)) {
-      results.push(true)
-    } else {
-      results.push(false)
+      result += total
     }
   }
-  return results
+  return result
 }
 
 console.log(part1(problems))
