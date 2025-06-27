@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day6_test.txt', 'utf8')
+const input = readFileSync('./day6_input.txt', 'utf8')
 
 const rows = input.split('\n')
 const map = rows.map(row => row.split(''))
@@ -16,11 +16,11 @@ type GuardState = {
 }
 
 type WorldState = {
-  moveHis: Direction[][][],
   map: string[][],
   guard: GuardState,
+  status: Outcome,
+  prevMoves: Set<string>,
   blockSpots: Set<string>,
-  status: Outcome
 }
 
 const nextDir = new Map<Direction, Direction>()
@@ -40,11 +40,11 @@ function main() {
   }
 
   let world = {
-    moveHis: moveHis,
     map: map,
     guard: getGuard(map),
+    status: 'running',
+    prevMoves: new Set<string>(),
     blockSpots: new Set<string>(),
-    status: 'running'
   } as WorldState
 
   const finalWorld = runSim(world, true)
@@ -54,7 +54,7 @@ function main() {
 
 function runSim(world: WorldState, simulateBlockers: boolean) {
 
-  world = backFillHistory(world)
+  // world = backFillHistory(world)
 
   while (world.status === 'running') {
     world = updateWorld(world, simulateBlockers)
@@ -91,6 +91,8 @@ function updateWorld(world: WorldState, simulateBlockers: boolean): WorldState {
         throw new Error('Invalid guard dir')
     }
 
+    const moveStr = `${nextMove[0]},${nextMove[1]}${world.guard.dir}`
+
     if (nextMove[0] < 0 || nextMove[0] >= world.map[0].length || nextMove[1] < 0 || nextMove[1] >= world.map.length) {
       // Exit case
       world.guard.y = nextMove[0]
@@ -100,8 +102,9 @@ function updateWorld(world: WorldState, simulateBlockers: boolean): WorldState {
     } else if (world.map[nextMove[0]][nextMove[1]] === '#') {
       // Blocked case
       world.guard.dir = nextDir.get(world.guard.dir)
-    } else if (world.moveHis[world.guard.y][world.guard.x].includes(world.guard.dir)) {
+    } else if (world.prevMoves.has(moveStr)) {
       // Loop case
+      //console.log(`At y:${world.guard.y}, x:${world.guard.x}, dir:${world.guard.dir}, history is ${world.moveHis[world.guard.y][world.guard.x]}`)
       world.status = 'looped'
       return world
     } else {
@@ -117,7 +120,7 @@ function updateWorld(world: WorldState, simulateBlockers: boolean): WorldState {
         }
       }
       // Update the move history of the current tile
-      world.moveHis[world.guard.y][world.guard.x].push(world.guard.dir)
+      world.prevMoves.add(moveStr)
       // Do normal movement 
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
@@ -127,30 +130,6 @@ function updateWorld(world: WorldState, simulateBlockers: boolean): WorldState {
   return world
 }
 
-
-
-/*
-} else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
-// Standard next move case
- 
-// if so, our "nextMove" is a valid blocker
-// console.log(`moveHis at: ${world.guard.y},${world.guard.x}${world.guard.dir} : ${world.moveHis[world.guard.y][world.guard.x]}\n\tnextDir: ${nextDir.get(world.guard.dir)}`)
-if (world.moveHis[world.guard.y][world.guard.x].includes(nextDir.get(world.guard.dir))) {
-  world.blockSpots.add(`${nextMove[0]},${nextMove[1]}`)
-  console.log(`\t\tnew blocker: ${nextMove[0]},${nextMove[1]}`)
-}
- 
-// world = backFillHistory(world)
- 
-// update guard position to nextmove
-world.guard.y = nextMove[0]
-world.guard.x = nextMove[1]
-validMove = true
- 
-}
-return world
-}
-*/
 
 // find initial location of guard
 function getGuard(map: string[][]) {
@@ -163,29 +142,6 @@ function getGuard(map: string[][]) {
           y: Number(y),
         } as GuardState
       }
-    }
-  }
-}
-
-function backFillHistory(world: WorldState): WorldState {
-  let x = world.guard.x
-  let y = world.guard.y
-  let dir = world.guard.dir
-
-  while (true) {
-    world.moveHis[y][x].push(dir)
-    if (dir === '^') {
-      y++
-    } else if (dir === '>') {
-      x--
-    } else if (dir === 'v') {
-      y--
-    } else if (dir === '<') {
-      x++
-    }
-
-    if ((y >= world.map.length || y < 0 || x >= world.map[0].length || x < 0) || world.map[y][x] === '#') {
-      return world
     }
   }
 }
