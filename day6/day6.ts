@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day6_test.txt', 'utf8')
+const input = readFileSync('./day6_input.txt', 'utf8')
 
 const rows = input.split('\n')
 const map = rows.map(row => row.split(''))
