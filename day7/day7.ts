@@ -9,7 +9,7 @@ for (const i in rows) {
   problems.push([totalAndNums[0], ...totalAndNums[1].split(' ')])
 }
 
-console.log(problems)
+//console.log(problems)
 
 function part1(problems: any[]) {
   let result = 0
@@ -18,8 +18,8 @@ function part1(problems: any[]) {
     const total = Number(problem[0])
     const nums = Array.from(problem.slice(1)).map(str => Number(str))
 
-    let pa: number[] = [1]
-    for (let i = 0; i < nums.length; i++) {
+    let pa: number[] = [nums[0]]
+    for (let i = 1; i < nums.length; i++) {
       const sums = []
       const products = []
       for (const val of pa) {
@@ -27,6 +27,11 @@ function part1(problems: any[]) {
         products.push(val * nums[i])
       }
       pa = sums.concat(products)
+    }
+
+    console.log(pa)
+    if (pa.length !== 2 ** (nums.length - 1)) {
+      console.log("might not be seeing enough terms")
     }
 
     if (pa.includes(total)) {
