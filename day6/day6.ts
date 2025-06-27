@@ -7,6 +7,8 @@ const map = rows.map(row => row.split(''))
 
 type Direction = '^' | '>' | 'v' | '<'
 
+type Outcome = 'running' | 'looped' | 'exited'
+
 type GuardState = {
   dir: Direction,
   x: number,
@@ -17,7 +19,8 @@ type WorldState = {
   moveHis: Direction[][][],
   map: string[][],
   guard: GuardState,
-  blockSpots: Set<string>
+  blockSpots: Set<string>,
+  status: Outcome
 }
 
 const nextDir = new Map<Direction, Direction>()
@@ -26,7 +29,8 @@ nextDir.set('>', 'v')
 nextDir.set('v', '<')
 nextDir.set('<', '^')
 
-function runSim() {
+function main() {
+  // setup the initial state of the world
   const moveHis: Direction[][][] = []
   for (let y = 0; y < map.length; y++) {
     moveHis[y] = []
@@ -39,29 +43,114 @@ function runSim() {
     moveHis: moveHis,
     map: map,
     guard: getGuard(map),
-    blockSpots: new Set<string>()
-  }
+    blockSpots: new Set<string>(),
+    status: 'running'
+  } as WorldState
+
+  const finalWorld = runSim(world, true)
+  console.log(finalWorld)
+
+}
+
+function runSim(world: WorldState, simulateBlockers: boolean) {
 
   world = backFillHistory(world)
 
-  let guardSteps = 0
-  while (world.guard.x >= 0 && world.guard.x < world.map[0].length && world.guard.y >= 0 && world.guard.y < world.map.length) {
-    world = updateWorld(world)
-    guardSteps++
+  while (world.status === 'running') {
+    world = updateWorld(world, simulateBlockers)
   }
 
-  // when the guard has exited
-  console.log(`Guard took ${guardSteps} steps`)
-  let xCount = 0
-  for (const y in map) {
-    for (const x in map) {
-      if (world.map[y][x] === 'X')
-        xCount++
-    }
-  }
-  return [xCount, world.blockSpots.size]
+  return world
 }
 
+
+
+function updateWorld(world: WorldState, simulateBlockers: boolean): WorldState {
+  // Update the current position of the guard to 'X'
+  world.map[world.guard.y][world.guard.x] = "X"
+
+  let moved = false
+  while (!moved) {
+    // [y, x]
+    let nextMove: number[] = []
+
+    switch (world.guard.dir) {
+      case '^':
+        nextMove = [world.guard.y - 1, world.guard.x]
+        break
+      case '>':
+        nextMove = [world.guard.y, world.guard.x + 1]
+        break
+      case 'v':
+        nextMove = [world.guard.y + 1, world.guard.x]
+        break
+      case '<':
+        nextMove = [world.guard.y, world.guard.x - 1]
+        break
+      default:
+        throw new Error('Invalid guard dir')
+    }
+
+    if (nextMove[0] < 0 || nextMove[0] >= world.map[0].length || nextMove[1] < 0 || nextMove[1] >= world.map.length) {
+      // Exit case
+      world.guard.y = nextMove[0]
+      world.guard.x = nextMove[1]
+      world.status = 'exited'
+      return world
+    } else if (world.map[nextMove[0]][nextMove[1]] === '#') {
+      // Blocked case
+      world.guard.dir = nextDir.get(world.guard.dir)
+    } else if (world.moveHis[world.guard.y][world.guard.x].includes(world.guard.dir)) {
+      // Loop case
+      world.status = 'looped'
+      return world
+    } else {
+      // Standard case
+      // If we're not already in an extra-blocker sim, see if adding a blocker to our next move causes a halt.
+      //  - If so, make the nextMove spot a 'blockspot'
+      if (simulateBlockers) {
+        const cloneWorld = structuredClone(world)
+        cloneWorld.map[nextMove[0]][nextMove[1]] = '#'
+        const simWorld = runSim(cloneWorld, false)
+        if (simWorld.status === 'looped') {
+          world.blockSpots.add(`${nextMove[0]},${nextMove[1]}`)
+        }
+      }
+      // Update the move history of the current tile
+      world.moveHis[world.guard.y][world.guard.x].push(world.guard.dir)
+      // Do normal movement 
+      world.guard.y = nextMove[0]
+      world.guard.x = nextMove[1]
+      moved = true
+    }
+  }
+  return world
+}
+
+
+
+/*
+} else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
+// Standard next move case
+ 
+// if so, our "nextMove" is a valid blocker
+// console.log(`moveHis at: ${world.guard.y},${world.guard.x}${world.guard.dir} : ${world.moveHis[world.guard.y][world.guard.x]}\n\tnextDir: ${nextDir.get(world.guard.dir)}`)
+if (world.moveHis[world.guard.y][world.guard.x].includes(nextDir.get(world.guard.dir))) {
+  world.blockSpots.add(`${nextMove[0]},${nextMove[1]}`)
+  console.log(`\t\tnew blocker: ${nextMove[0]},${nextMove[1]}`)
+}
+ 
+// world = backFillHistory(world)
+ 
+// update guard position to nextmove
+world.guard.y = nextMove[0]
+world.guard.x = nextMove[1]
+validMove = true
+ 
+}
+return world
+}
+*/
 
 // find initial location of guard
 function getGuard(map: string[][]) {
@@ -86,80 +175,19 @@ function backFillHistory(world: WorldState): WorldState {
   while (true) {
     world.moveHis[y][x].push(dir)
     if (dir === '^') {
-      y--
-    } else if (dir === '>') {
-      x++
-    } else if (dir === 'v') {
       y++
-    } else if (dir === '<') {
+    } else if (dir === '>') {
       x--
+    } else if (dir === 'v') {
+      y--
+    } else if (dir === '<') {
+      x++
     }
 
-    if (world.map[y][x] === undefined || world.map[y][x] === '#') {
+    if ((y >= world.map.length || y < 0 || x >= world.map[0].length || x < 0) || world.map[y][x] === '#') {
       return world
     }
   }
 }
 
-function updateWorld(world: WorldState): WorldState {
-  // Update the current position of the guard to 'X'
-  world.map[world.guard.y][world.guard.x] = "X"
-
-  // Update the move history of the current tile
-  world.moveHis[world.guard.y][world.guard.x].push(world.guard.dir)
-
-
-  let validMove = false
-  while (!validMove) {
-    // [y, x]
-    let nextMove: number[] = []
-
-    switch (world.guard.dir) {
-      case '^':
-        nextMove = [world.guard.y - 1, world.guard.x]
-        break
-      case '>':
-        nextMove = [world.guard.y, world.guard.x + 1]
-        break
-      case 'v':
-        nextMove = [world.guard.y + 1, world.guard.x]
-        break
-      case '<':
-        nextMove = [world.guard.y, world.guard.x - 1]
-        break
-      default:
-        throw new Error('Invalid guard dir')
-    }
-
-    if (nextMove[0] < 0 || nextMove[0] >= world.map[0].length || nextMove[1] < 0 || nextMove[1] >= world.map.length) {
-      // if the nextMove is taking the guard out-of-limits, update the 
-      // guard position and immediately return the world
-      world.guard.y = nextMove[0]
-      world.guard.x = nextMove[1]
-      console.log(`as we approach ${nextMove[0]},${nextMove[1]}, we exit this world...`)
-      return world
-
-    } else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
-      // nextmove is legal 
-
-      // check -- if we did turn here, would be be repeating a direction in moveHis?
-      // if so, our "nextMove" is a valid blocker
-      console.log(`moveHis at: ${world.guard.y},${world.guard.x}${world.guard.dir} : ${world.moveHis[world.guard.y][world.guard.x]}\n\tnextDir: ${nextDir.get(world.guard.dir)}`)
-      if (world.moveHis[world.guard.y][world.guard.x].includes(nextDir.get(world.guard.dir))) {
-        world.blockSpots.add(`${nextMove[0]},${nextMove[1]}`)
-        console.log(`\t\tnew blocker: ${nextMove[0]},${nextMove[1]}`)
-      }
-
-      // update guard position to nextmove
-      world.guard.y = nextMove[0]
-      world.guard.x = nextMove[1]
-      validMove = true
-
-    } else {
-      world.guard.dir = nextDir.get(world.guard.dir)
-    }
-  }
-  return world
-}
-
-console.log(runSim())
+console.log(main())
