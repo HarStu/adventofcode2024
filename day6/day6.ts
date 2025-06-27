@@ -7,6 +7,8 @@ const map = rows.map(row => row.split(''))
 
 type Direction = '^' | '>' | 'v' | '<'
 
+type Outcome = 'running' | 'looped' | 'exited'
+
 type GuardState = {
   dir: Direction,
   x: number,
@@ -15,55 +17,62 @@ type GuardState = {
 
 type WorldState = {
   map: string[][],
-  guard: GuardState
+  guard: GuardState,
+  status: Outcome,
+  prevMoves: Set<string>,
+  blockSpots: Set<string>,
 }
 
-function part1() {
-  let world = {
-    map: map,
-    guard: getGuard(map)
-  }
+const nextDir = new Map<Direction, Direction>()
+nextDir.set('^', '>')
+nextDir.set('>', 'v')
+nextDir.set('v', '<')
+nextDir.set('<', '^')
 
-  let guardSteps = 0
-  while (world.guard.x >= 0 && world.guard.x < world.map[0].length && world.guard.y >= 0 && world.guard.y < world.map.length) {
-    world = updateWorld(world)
-    guardSteps++
-  }
+function main() {
+  // setup the initial state of the world
+  let loopedWorlds = 0
+  let exitedWorlds = 0
 
-  // when the guard has exited
-  console.log(`Guard took ${guardSteps} steps`)
-  let xCount = 0
-  for (const y in map) {
-    for (const x in map) {
-      if (world.map[y][x] === 'X')
-        xCount++
-    }
-  }
-  return xCount
-}
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map.length; x++) {
+      const world = {
+        map: structuredClone(map),
+        guard: getGuard(map),
+        status: 'running',
+        prevMoves: new Set<string>(),
+        blockSpots: new Set<string>(),
+      } as WorldState
+      world.map[y][x] = '#'
 
-
-// find initial location of guard
-function getGuard(map: string[][]) {
-  for (const y in map) {
-    for (const x in map) {
-      if (['^', '>', 'v', '<'].includes(map[y][x])) {
-        return {
-          dir: map[y][x],
-          x: Number(x),
-          y: Number(y),
-        } as GuardState
+      const finalWorld = runSim(world)
+      console.log(`status of world ${y},${x}: ${finalWorld.status}`)
+      if (finalWorld.status === 'exited') {
+        exitedWorlds++
+      } else if (finalWorld.status === 'looped') {
+        loopedWorlds++
       }
     }
   }
+  console.log(`looped: ${loopedWorlds}  exited: ${exitedWorlds}  total: ${loopedWorlds + exitedWorlds}`)
+
+}
+
+function runSim(world: WorldState) {
+
+  while (world.status === 'running') {
+    world = updateWorld(world)
+  }
+
+  return world
 }
 
 function updateWorld(world: WorldState): WorldState {
   // Update the current position of the guard to 'X'
   world.map[world.guard.y][world.guard.x] = "X"
 
-  let validMove = false
-  while (!validMove) {
+  let moved = false
+  while (!moved) {
     // [y, x]
     let nextMove: number[] = []
 
@@ -84,44 +93,48 @@ function updateWorld(world: WorldState): WorldState {
         throw new Error('Invalid guard dir')
     }
 
+    const moveStr = `${nextMove[0]},${nextMove[1]}${world.guard.dir}`
+
     if (nextMove[0] < 0 || nextMove[0] >= world.map[0].length || nextMove[1] < 0 || nextMove[1] >= world.map.length) {
-      // if the nextMove is taking the guard out-of-limits, update the 
-      // guard position and immediately return the world
+      // Exit case
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
+      world.status = 'exited'
       return world
-    } else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
-      // if the next move isn't blocked by a #, move is valid
-      // update guard pos and set validMove to true to escape the
-      // while loop
+    } else if (world.map[nextMove[0]][nextMove[1]] === '#') {
+      // Blocked case
+      world.guard.dir = nextDir.get(world.guard.dir)
+    } else if (world.prevMoves.has(moveStr)) {
+      // Loop case
+      world.status = 'looped'
+      return world
+    } else {
+      // Standard case
+      // Update the move history of the current tile
+      world.prevMoves.add(moveStr)
+      // Do normal movement 
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
-      validMove = true
-    } else {
-      // else, the guard is in-bounds and blocked
-      // so long as we can't find a valid move, the guard 
-      // will pivot 90 degrees at a time
-      // guard turns
-      switch (world.guard.dir) {
-        case '^':
-          world.guard.dir = '>'
-          break
-        case '>':
-          world.guard.dir = 'v'
-          break
-        case 'v':
-          world.guard.dir = '<'
-          break
-        case '<':
-          world.guard.dir = '^'
-          break
-        default:
-          throw new Error('Invalid guard dir')
-      }
+      moved = true
     }
   }
-
   return world
 }
 
-console.log(part1())
+
+// find initial location of guard
+function getGuard(map: string[][]) {
+  for (const y in map) {
+    for (const x in map[y]) {
+      if (['^', '>', 'v', '<'].includes(map[y][x])) {
+        return {
+          dir: map[y][x],
+          x: Number(x),
+          y: Number(y),
+        } as GuardState
+      }
+    }
+  }
+}
+
+main()
