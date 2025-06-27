@@ -26,11 +26,10 @@ nextDir.set('>', 'v')
 nextDir.set('v', '<')
 nextDir.set('<', '^')
 
-function part1() {
-
+function runSim() {
   const moveHis = []
-  for (const y in map) {
-    for (const x in map) {
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map[0].length; x++) {
       moveHis[y][x] = []
     }
   }
@@ -57,7 +56,7 @@ function part1() {
         xCount++
     }
   }
-  return xCount
+  return [xCount, world.blockSpots.size]
 }
 
 
@@ -110,10 +109,15 @@ function updateWorld(world: WorldState): WorldState {
     if (nextMove[0] < 0 || nextMove[0] >= world.map[0].length || nextMove[1] < 0 || nextMove[1] >= world.map.length) {
       // if the nextMove is taking the guard out-of-limits, update the 
       // guard position and immediately return the world
+
+      // check -- if we did turn here, would be be repeating a direction in moveHis?
+      // if so, our "nextMove" is a valid blocker
+      if (world.moveHis[world.guard.y][world.guard.x].includes(nextDir.get(world.guard.dir))) {
+        world.blockSpots.add(`${nextMove[0]},${nextMove[1]}`)
+      }
+
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
-
-
       return world
     } else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
       // if the next move isn't blocked by a #, move is valid
@@ -126,9 +130,7 @@ function updateWorld(world: WorldState): WorldState {
       world.guard.dir = nextDir.get(world.guard.dir)
     }
   }
+  return world
 }
 
-return world
-}
-
-console.log(part1())
+console.log(runSim())
