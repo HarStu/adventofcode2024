@@ -1,17 +1,11 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day5_input.txt', "utf8")
+const input = readFileSync('./day5_test.txt', "utf8")
 
 const [rulesText, productionText] = input.split('\n\n')
 
 const rules = rulesText?.split('\n').map(rule => rule.split('|'))
 const production = productionText?.split('\n').map(row => row.split(','))
-
-const xRulePages = rules?.map((page) => page[0])
-const yRulePages = rules?.map((page) => page[1])
-
-// Build a list of immediately-legal pages for production
-const legalPages = new Set(xRulePages?.filter((page) => yRulePages?.includes(page)))
 
 // Build a map of unlocks
 const mainUnlockMap = new Map<string, string[]>()
@@ -22,7 +16,8 @@ for (let rule of rules!) {
 console.log(mainUnlockMap)
 
 function part1(production: string[][]) {
-  let total = 0
+  let validTotal = 0
+  let correctedTotal = 0
 
   for (const row of production) {
     // build local update map
@@ -44,26 +39,17 @@ function part1(production: string[][]) {
         seen.add(num)
       } else {
         midVal = 0
+        correctedTotal += part2(row, unlockMap)
       }
     }
-    total += midVal
+    validTotal += midVal
   }
-  return total
+  return [validTotal, correctedTotal]
 }
 
-function part2(production: string[][]) {
-  let total = 0
 
-  for (const row of production) {
-    // build local dependency map
-    const unlockMap = new Map<string, string[]>()
-    for (const num of row) {
-      if (mainUnlockMap.get(num)) {
-        unlockMap.set(num, mainUnlockMap.get(num)!.filter(val => row.includes(val)))
-      }
-    }
-    console.log(unlockMap)
-  }
+function part2(errRow: string[], unlockMap: Map<string, string[]>): number {
+
 }
 
 console.log(part1(production!))
