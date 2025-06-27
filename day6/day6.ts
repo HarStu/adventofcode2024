@@ -75,7 +75,7 @@ function updateWorld(world: WorldState): WorldState {
         nextMove = [world.guard.y, world.guard.x + 1]
         break
       case 'v':
-        nextMove = [world.guard.y + 1, world.guard.x + 1]
+        nextMove = [world.guard.y + 1, world.guard.x]
         break
       case '<':
         nextMove = [world.guard.y, world.guard.x - 1]
@@ -84,9 +84,23 @@ function updateWorld(world: WorldState): WorldState {
         throw new Error('Invalid guard dir')
     }
 
-    if (world.map[nextMove[0]][nextMove[1]] !== '#') {
+    if (nextMove[0] < 0 || nextMove[0] >= world.map[0].length || nextMove[1] < 0 || nextMove[1] >= world.map.length) {
+      // if the nextMove is taking the guard out-of-limits, update the 
+      // guard position and immediately return the world
+      world.guard.y = nextMove[0]
+      world.guard.x = nextMove[1]
+      return world
+    } else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
+      // if the next move isn't blocked by a #, move is valid
+      // update guard pos and set validMove to true to escape the
+      // while loop
+      world.guard.y = nextMove[0]
+      world.guard.x = nextMove[1]
       validMove = true
     } else {
+      // else, the guard is in-bounds and blocked
+      // so long as we can't find a valid move, the guard 
+      // will pivot 90 degrees at a time
       // guard turns
       switch (world.guard.dir) {
         case '^':
@@ -105,8 +119,8 @@ function updateWorld(world: WorldState): WorldState {
           throw new Error('Invalid guard dir')
       }
     }
-
   }
+
   return world
 }
 
