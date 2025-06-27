@@ -24,8 +24,8 @@ console.log(mainUnlockMap)
 function part1(production: string[][]) {
   let total = 0
 
-  // build local update map
   for (const row of production) {
+    // build local update map
     const unlockMap = new Map<string, string[]>()
     for (const num of row) {
       if (mainUnlockMap.get(num)) {
@@ -38,7 +38,7 @@ function part1(production: string[][]) {
     const seen = new Set()
     for (let num of row) {
       const preReqs = unlockMap.get(num)
-      if (!preReqs || preReqs.length === 0) {
+      if (!preReqs) {
         seen.add(num)
       } else if ([...preReqs].every(val => seen.has(val))) {
         seen.add(num)
@@ -49,6 +49,21 @@ function part1(production: string[][]) {
     total += midVal
   }
   return total
+}
+
+function part2(production: string[][]) {
+  let total = 0
+
+  for (const row of production) {
+    // build local dependency map
+    const unlockMap = new Map<string, string[]>()
+    for (const num of row) {
+      if (mainUnlockMap.get(num)) {
+        unlockMap.set(num, mainUnlockMap.get(num)!.filter(val => row.includes(val)))
+      }
+    }
+    console.log(unlockMap)
+  }
 }
 
 console.log(part1(production!))
