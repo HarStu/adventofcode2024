@@ -42,6 +42,8 @@ function runSim() {
     blockSpots: new Set<string>()
   }
 
+  world = backFillHistory(world)
+
   let guardSteps = 0
   while (world.guard.x >= 0 && world.guard.x < world.map[0].length && world.guard.y >= 0 && world.guard.y < world.map.length) {
     world = updateWorld(world)
@@ -72,6 +74,29 @@ function getGuard(map: string[][]) {
           y: Number(y),
         } as GuardState
       }
+    }
+  }
+}
+
+function backFillHistory(world: WorldState): WorldState {
+  let x = world.guard.x
+  let y = world.guard.y
+  let dir = world.guard.dir
+
+  while (true) {
+    world.moveHis[y][x].push(dir)
+    if (dir === '^') {
+      y--
+    } else if (dir === '>') {
+      x++
+    } else if (dir === 'v') {
+      y++
+    } else if (dir === '<') {
+      x--
+    }
+
+    if (world.map[y][x] === undefined || world.map[y][x] === '#') {
+      return world
     }
   }
 }
@@ -111,21 +136,25 @@ function updateWorld(world: WorldState): WorldState {
       // guard position and immediately return the world
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
+      console.log(`as we approach ${nextMove[0]},${nextMove[1]}, we exit this world...`)
       return world
+
     } else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
+      // nextmove is legal 
+
       // check -- if we did turn here, would be be repeating a direction in moveHis?
       // if so, our "nextMove" is a valid blocker
-      console.log(`moveHis here at ${world.guard.y},${world.guard.x}: ${world.moveHis[world.guard.y][world.guard.x]}\n\tnextDir: ${nextDir.get(world.guard.dir)}`)
+      console.log(`moveHis at: ${world.guard.y},${world.guard.x}${world.guard.dir} : ${world.moveHis[world.guard.y][world.guard.x]}\n\tnextDir: ${nextDir.get(world.guard.dir)}`)
       if (world.moveHis[world.guard.y][world.guard.x].includes(nextDir.get(world.guard.dir))) {
         world.blockSpots.add(`${nextMove[0]},${nextMove[1]}`)
+        console.log(`\t\tnew blocker: ${nextMove[0]},${nextMove[1]}`)
       }
 
-      // if the next move isn't blocked by a #, move is valid
-      // update guard pos and set validMove to true to escape the
-      // while loop
+      // update guard position to nextmove
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
       validMove = true
+
     } else {
       world.guard.dir = nextDir.get(world.guard.dir)
     }
