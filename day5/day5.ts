@@ -23,6 +23,8 @@ console.log(mainUnlockMap)
 
 function part1(production: string[][]) {
   let total = 0
+
+  // build local update map
   for (const row of production) {
     const unlockMap = new Map<string, string[]>()
     for (const num of row) {
@@ -30,18 +32,18 @@ function part1(production: string[][]) {
         unlockMap.set(num, mainUnlockMap.get(num)!.filter(val => row.includes(val)))
       }
     }
+
+    // check if rule is valid
     let midVal = Number(row[Math.floor(row.length / 2)])
     const seen = new Set()
     for (let num of row) {
       const preReqs = unlockMap.get(num)
       if (!preReqs || preReqs.length === 0) {
         seen.add(num)
+      } else if ([...preReqs].every(val => seen.has(val))) {
+        seen.add(num)
       } else {
-        if ([...preReqs].every(val => seen.has(val))) {
-          seen.add(num)
-        } else {
-          midVal = 0
-        }
+        midVal = 0
       }
     }
     total += midVal
