@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day5_test.txt', "utf8")
+const input = readFileSync('./day5_input.txt', "utf8")
 
 const [rulesText, productionText] = input.split('\n\n')
 
@@ -12,8 +12,6 @@ const mainUnlockMap = new Map<string, string[]>()
 for (let rule of rules!) {
   mainUnlockMap.set(rule[1]!, (mainUnlockMap.get(rule[1]!) || []).concat(rule[0]!))
 }
-
-console.log(mainUnlockMap)
 
 function part1(production: string[][]) {
   let validTotal = 0
@@ -63,7 +61,6 @@ function part2(errRow: string[], unlockMap: Map<string, string[]>): number {
       }
     }
   }
-  console.log(`our newRow is ${newRow}`)
   return Number(newRow[Math.floor(newRow.length / 2)])
 }
 
