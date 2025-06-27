@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-const input = readFileSync('./day6_input.txt', 'utf8')
+const input = readFileSync('./day6_test.txt', 'utf8')
 
 const rows = input.split('\n')
 const map = rows.map(row => row.split(''))
@@ -14,14 +14,32 @@ type GuardState = {
 }
 
 type WorldState = {
+  moveHis: string[][][],
   map: string[][],
-  guard: GuardState
+  guard: GuardState,
+  blockSpots: Set<string>
 }
 
+const nextDir = new Map<Direction, Direction>()
+nextDir.set('^', '>')
+nextDir.set('>', 'v')
+nextDir.set('v', '<')
+nextDir.set('<', '^')
+
 function part1() {
+
+  const moveHis = []
+  for (const y in map) {
+    for (const x in map) {
+      moveHis[y][x] = []
+    }
+  }
+
   let world = {
+    moveHis: moveHis,
     map: map,
-    guard: getGuard(map)
+    guard: getGuard(map),
+    blockSpots: new Set<string>()
   }
 
   let guardSteps = 0
@@ -62,6 +80,11 @@ function updateWorld(world: WorldState): WorldState {
   // Update the current position of the guard to 'X'
   world.map[world.guard.y][world.guard.x] = "X"
 
+  // Update the move history of the current tile to '
+  world.moveHis[world.guard.y][world.guard.x].push(world.guard.dir)
+
+  // Get the direction the guard is going to move in next:
+
   let validMove = false
   while (!validMove) {
     // [y, x]
@@ -89,6 +112,8 @@ function updateWorld(world: WorldState): WorldState {
       // guard position and immediately return the world
       world.guard.y = nextMove[0]
       world.guard.x = nextMove[1]
+
+
       return world
     } else if (world.map[nextMove[0]][nextMove[1]] !== '#') {
       // if the next move isn't blocked by a #, move is valid
@@ -98,30 +123,12 @@ function updateWorld(world: WorldState): WorldState {
       world.guard.x = nextMove[1]
       validMove = true
     } else {
-      // else, the guard is in-bounds and blocked
-      // so long as we can't find a valid move, the guard 
-      // will pivot 90 degrees at a time
-      // guard turns
-      switch (world.guard.dir) {
-        case '^':
-          world.guard.dir = '>'
-          break
-        case '>':
-          world.guard.dir = 'v'
-          break
-        case 'v':
-          world.guard.dir = '<'
-          break
-        case '<':
-          world.guard.dir = '^'
-          break
-        default:
-          throw new Error('Invalid guard dir')
-      }
+      world.guard.dir = nextDir.get(world.guard.dir)
     }
   }
+}
 
-  return world
+return world
 }
 
 console.log(part1())
