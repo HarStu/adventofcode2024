@@ -40,6 +40,7 @@ function part1(production: string[][]) {
       } else {
         midVal = 0
         correctedTotal += part2(row, unlockMap)
+        break;
       }
     }
     validTotal += midVal
