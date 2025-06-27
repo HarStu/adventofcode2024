@@ -49,7 +49,21 @@ function part1(production: string[][]) {
 
 
 function part2(errRow: string[], unlockMap: Map<string, string[]>): number {
-
+  const newRow = []
+  const errSet = new Set(errRow)
+  const seen = new Set()
+  while (errSet.size !== 0) {
+    for (let num of errSet) {
+      const preReqs = unlockMap.get(num)
+      if (!preReqs || [...preReqs].every(val => seen.has(val))) {
+        seen.add(num)
+        errSet.delete(num)
+        newRow.push(num)
+      }
+    }
+  }
+  console.log(`our newRow is ${newRow}`)
+  return Number(newRow[Math.floor(newRow.length / 2)])
 }
 
 console.log(part1(production!))
